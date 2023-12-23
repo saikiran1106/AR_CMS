@@ -88,7 +88,7 @@ app.post('/create-model', async (req, res) => {
     const fileName = `model-${Date.now()}.html`; 
     const filePath = path.join(__dirname, 'public', fileName);
     fs.writeFileSync(filePath, html);
-    const hostedUrl = `https://${process.env.PRODUCTION_URL}/public/${fileName}`;
+    const hostedUrl = `${process.env.PRODUCTION_URL}/public/${fileName}`;
     QRCode.toDataURL(hostedUrl, (err, url) => {
       if (err) {
         console.error(err);
