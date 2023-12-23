@@ -8,6 +8,7 @@ const swaggerJsDoc = require('swagger-jsdoc');
 const fs = require('fs');
 const app = express();
 const path = require('path');
+const cors = require('cors');
 
 const PORT = process.env.PORT || 3000;
 
@@ -15,6 +16,7 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // BodyParser Middleware
 app.use(bodyParser.json());
+app.use(cors())
 
 // Swagger definition
 const swaggerOptions = {
@@ -26,7 +28,7 @@ const swaggerOptions = {
       description: 'An API to create 3D model viewers with dynamic HTML templates and generate QR codes.',
     },
     servers: [{
-      url: `http://localhost:3000/`, // This will be your Vercel URL in production
+     url: process.env.PRODUCTION_URL || 'http://localhost:3000', // Dynamic URL
     }],
   },
   apis: ['./index.js'], // Path to the API docs
