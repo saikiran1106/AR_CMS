@@ -26,7 +26,7 @@ const swaggerOptions = {
       description: 'An API to create 3D model viewers with dynamic HTML templates and generate QR codes.',
     },
     servers: [{
-      url: `https://${process.env.VERCEL_URL}`, // This will be your Vercel URL in production
+      url: `http://localhost:3000/`, // This will be your Vercel URL in production
     }],
   },
   apis: ['./index.js'], // Path to the API docs
