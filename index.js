@@ -18,6 +18,8 @@ require('dotenv').config();
 const secretKey = process.env.SECRET_KEY;
 // Now access the MONGODB_URI from the process.env
 const uri = process.env.MONGODB_URI;
+const argon2 = require('argon2');
+
 
 // Define a schema for the Contact form responses
 const responseSchema = new mongoose.Schema({
@@ -306,7 +308,9 @@ app.get('/list-templates', authenticateToken , (req, res) => {
 app.post('/signup', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = new User({ username, password });
+    // Hash password using argon2
+    const hash = await argon2.hash(password);
+    const user = new User({ username, password: hash });
     await user.save();
     res.status(201).json({ message: 'User created successfully' });
   } catch (error) {
@@ -352,11 +356,20 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username });
-  
-  if (user && await bcrypt.compare(password, user.password)) {
-    // Create JWT token
-    const token = jwt.sign({ userId: user._id }, secretKey , { expiresIn: '1h' });
-    res.status(200).json({ token: token });
+
+  if (user) {
+    // Verify password using argon2
+    try {
+      if (await argon2.verify(user.password, password)) {
+        // Create JWT token
+        const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
+        res.status(200).json({ token: token });
+      } else {
+        res.status(401).json({ message: 'Authentication failed' });
+      }
+    } catch (err) {
+      res.status(401).json({ message: 'Authentication failed' });
+    }
   } else {
     res.status(401).json({ message: 'Authentication failed' });
   }
