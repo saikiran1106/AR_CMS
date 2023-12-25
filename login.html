@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Screen</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #333;
+            /* Dark background for body */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            /* Text color for better contrast */
+        }
+    
+        .login-container {
+            background: #444;
+            /* Dark background for the login container */
+            padding: 2rem;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            /* Stronger shadow for depth */
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+        }
+    
+        .logo {
+            margin: 1rem auto; /* Center logo with auto horizontal margins */
+            display: block; /* Ensure the div behaves as a block-level element */
+        }
+
+        .login-container img {
+            max-width: 60%; /* Adjust logo size as needed */
+            height: auto; /* Maintain aspect ratio */
+            display: block; /* Make the image a block-level element */
+            margin: 0 auto; /* Center image with auto margins */
+        }
+        .login-form input {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+            border: 1px solid #555;
+            /* Slightly lighter border for visibility */
+            background: #333;
+            /* Dark input fields */
+            color: white;
+            /* Text color for input fields */
+            box-sizing: border-box;
+        }
+    
+        .login-form input::placeholder {
+            color: #bbb;
+            /* Lighter placeholder text for visibility */
+        }
+    
+        .login-form button {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            background-color: #ff6a00;
+            /* Orange button to match the logo */
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+    
+        .login-form button:hover {
+            background-color: #e65c00;
+            /* Darker orange on hover */
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="logo">
+            <img src="https://cdn.glitch.global/f6b9de6b-2587-45a4-84d3-a34521e84274/63ee5fbd-1487-46fe-9a67-90b5eaf395ac.png?v=1703412989610" alt="Logo">
+        </div>
+        <form class="login-form" id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+   
+
+
+</body>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+
+            // Call the login API
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: username, password: password })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Login failed');
+                    }
+                })
+                .then(data => {
+                    if (data.token) {
+                        // Store the token in localStorage
+                        localStorage.setItem('token', data.token);
+
+                        // Redirect to the template page with the token
+                        // Ensure you have a query parameter or some method to know which template to load next
+                        const nextTemplateId = 'mustang1-658810af8fc6a0fe73d2f8d8'; // example templateId or retrieve from somewhere
+                        window.location.href = `/template/${nextTemplateId}`;
+                    } else {
+                        throw new Error('Token not found in response');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Login failed: ' + error.message);
+                });
+        });
+    </script>
+
+</html>

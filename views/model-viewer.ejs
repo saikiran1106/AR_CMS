@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><model-viewer> example</title>
+    <title><%= modelName %></title>
     <script src="https://unpkg.com/focus-visible@5.0.2/dist/focus-visible.js" defer></script>
     <style>
         body {
@@ -42,6 +42,7 @@
             shadow-intensity="1"
             camera-controls
             auto-rotate
+            autoplay
             ar>
             <button slot="ar-button"
                 style="background: linear-gradient(to right, #FF69B4, #4B0082); border-radius: 10px; border: none; padding: 15px 20px; position: absolute; top: 2%; right: 2%; font-size: 1.5em; color: #FFFFFF; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
