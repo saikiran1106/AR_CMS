@@ -194,7 +194,14 @@ linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2));
             height: auto;
             /* Centering the image */
         }
-    
+    @media (max-width: 768px) {
+    .nav-links a,
+    .contact-button {
+        padding: 10px 5px; /* Adjust padding for smaller screens */
+        font-size: smaller; /* Adjust font size if necessary */
+    }
+}
+
 @media only screen and (max-width: 768px) {
     .carousel-card {
         margin: 15px 5px; /* Adjust margins for smaller screens */
