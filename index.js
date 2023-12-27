@@ -188,6 +188,8 @@ app.post('/create-model', authenticateToken, async (req, res) => {
  *     summary: Delete a saved HTML template
  *     description: Delete a saved HTML template file by name without considering the file extension
  *     tags: [Model Viewer]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: fileName
@@ -203,7 +205,7 @@ app.post('/create-model', authenticateToken, async (req, res) => {
  *       500:
  *         description: Server error
  */
-app.delete('/delete-template/:fileName', (req, res) => {
+app.delete('/delete-template/:fileName', authenticateToken , (req, res) => {
   const { fileName } = req.params;
   const dirPath = path.join(__dirname, 'public');
   let fileDeleted = false;
@@ -244,6 +246,8 @@ app.delete('/delete-template/:fileName', (req, res) => {
  *     summary: List all saved HTML templates
  *     description: Retrieve a list of all saved HTML templates in the application
  *     tags: [Model Viewer]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of saved templates
@@ -278,33 +282,33 @@ app.get('/list-templates', authenticateToken , (req, res) => {
 
 
 
-// Swagger docs for /signup
-/**
- * @swagger
- * /signup:
- *   post:
- *     summary: Register a new user
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - username
- *               - password
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: User registered successfully
- *       500:
- *         description: Error occurred
- */
+// // Swagger docs for /signup
+// /**
+//  * @swagger
+//  * /signup:
+//  *   post:
+//  *     summary: Register a new user
+//  *     tags: [Auth]
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             required:
+//  *               - username
+//  *               - password
+//  *             properties:
+//  *               username:
+//  *                 type: string
+//  *               password:
+//  *                 type: string
+//  *     responses:
+//  *       200:
+//  *         description: User registered successfully
+//  *       500:
+//  *         description: Error occurred
+//  */
 app.post('/signup', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -408,44 +412,44 @@ app.get('/', (req, res) => {
 });
 
 
-/**
- * @openapi
- * /submit-form:
- *   post:
- *     tags:
- *       - Responses
- *     summary: Record a response from the Contact Us form
- *     requestBody:
- *       description: Data for the Contact Us form
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: John Doe
- *               email:
- *                 type: string
- *                 example: john.doe@example.com
- *               message:
- *                 type: string
- *                 example: Hello, I have a query.
- *     responses:
- *       200:
- *         description: Response recorded successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Response recorded successfully!
- *       500:
- *         description: Error recording response
- */
+// /**
+//  * @openapi
+//  * /submit-form:
+//  *   post:
+//  *     tags:
+//  *       - Responses
+//  *     summary: Record a response from the Contact Us form
+//  *     requestBody:
+//  *       description: Data for the Contact Us form
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               name:
+//  *                 type: string
+//  *                 example: John Doe
+//  *               email:
+//  *                 type: string
+//  *                 example: john.doe@example.com
+//  *               message:
+//  *                 type: string
+//  *                 example: Hello, I have a query.
+//  *     responses:
+//  *       200:
+//  *         description: Response recorded successfully
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 message:
+//  *                   type: string
+//  *                   example: Response recorded successfully!
+//  *       500:
+//  *         description: Error recording response
+//  */
 app.post('/submit-form', async (req, res) => {
 try {
 const newResponse = new Response(req.body);
