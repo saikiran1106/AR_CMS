@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>QRAR - Experience Reality Differently</title>
     <link rel="icon" type="image/png" href="https://cdn.glitch.global/f6b9de6b-2587-45a4-84d3-a34521e84274/tab%20bar%20icon-04.svg?v=1703493798852">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -89,7 +90,7 @@
         }
 
 @media (max-width: 768px) {
-    .nav-links a,
+    
     .contact-button {
         padding: 10px 5px; /* Adjust padding for smaller screens */
         font-size: smaller; /* Adjust font size if necessary */
@@ -177,7 +178,7 @@ linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2));
         .carousel-card {
             border-radius: 15px;
             overflow: hidden;
-            margin: 10px;
+            margin: 5px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
             /* Centering the text */
@@ -186,12 +187,24 @@ linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2));
         }
 
         .card-img-top {
-            width: 80%;
+            width: 90%;
             /* Smaller image size */
             border-radius: 15px;
             margin: 10px auto;
+            height: auto;
             /* Centering the image */
         }
+    
+@media only screen and (max-width: 768px) {
+    .carousel-card {
+        margin: 15px 5px; /* Adjust margins for smaller screens */
+        
+    }
+
+    .card-img-top {
+        width: 100%; /* Larger image on smaller screens */
+    }
+}
 
         .card-title {
             color: #fff;
@@ -230,18 +243,7 @@ linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2));
             /* Lighter text color for description */
         }
 
-        /* Adjusting sizes and margins for responsive design */
-        @media only screen and (max-width: 768px) {
-            .carousel-card {
-                margin: 5px;
-                text-align: center;
-            }
-
-            .card-img-top {
-                width: 90%;
-                /* Slightly larger image on small screens */
-            }
-        }
+        
 
         /* Dark Theme */
         body,
