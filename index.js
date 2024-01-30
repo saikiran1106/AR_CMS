@@ -19,6 +19,9 @@ const secretKey = process.env.SECRET_KEY;
 const uri = process.env.MONGODB_URI;
 const argon2 = require('argon2');
 const bcrypt = require('bcrypt');
+const axios = require('axios');
+const FormData = require('form-data');
+
 
 
 // Define a schema for the Contact form responses
@@ -460,6 +463,64 @@ console.error(error);
 res.status(500).json({ message: 'Error recording response' });
 }
 });
+
+
+/**
+ * @openapi
+ * /convert-model:
+ *   post:
+ *     summary: Convert a GLB file to USDZ format
+ *     description: This endpoint allows for converting 3D model files.
+ *     tags: [Model Conversion]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *               from_format:
+ *                 type: string
+ *               to_format:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Conversion successful, returns USDZ file.
+ *       400:
+ *         description: Error in conversion.
+ */
+app.post('/convert-model',  async (req, res) => {
+    // Construct the form data
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream('public/space.glb')); // replace with the actual file path or pass file through request
+    formData.append('from_format', 'glb');
+    formData.append('to_format', 'usdz');
+
+    // Set up the request headers
+    const headers = {
+        ...formData.getHeaders(),
+        "Authorization": `Token ${process.env.CONVERT3D}` // replace with your actual token
+    };
+
+    // Make the API request
+    try {
+        const response = await axios.post('https://api.convert3d.org/convert', formData, { headers });
+        // Handle response here. For example, save the received file or send it back in the response
+        // This is where you'd likely want to handle the response stream and save the file
+        const outputPath = 'path/to/output/damaged-helmet.usdz'; // Set the output path
+        response.data.pipe(fs.createWriteStream(outputPath));
+        res.status(200).send('File converted and saved successfully.');
+    } catch (error) {
+        console.error('Error in conversion:', error);
+        res.status(500).send('Error converting file');
+    }
+});
+
+
+
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
