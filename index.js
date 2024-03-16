@@ -21,7 +21,8 @@ const argon2 = require('argon2');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 const FormData = require('form-data');
-
+const multer = require('multer');
+const upload = multer({ dest: 'public/uploads/' });
 
 
 // Define a schema for the Contact form responses
@@ -106,86 +107,86 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
 
 // Serve Swagger
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // EJS View Engine for rendering HTML
 app.set('view engine', 'ejs');
 
-/**
- * @openapi
- * /create-model:
- *   post:
- *     summary: Create a 3D model viewer
- *     description: Generate a dynamic HTML template for a 3D model viewer, name it, and generate a QR code pointing to it.
- *     tags: [Model Viewer]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - src
- *               - name
- *             properties:
- *               src:
- *                 type: string
- *                 description: The source URL of the 3D model
- *               iosSrc:
- *                 type: string
- *                 description: The source URL for the iOS model (optional)
- *               name:
- *                 type: string
- *                 description: The desired name for the 3D model template
- *     responses:
- *       200:
- *         description: Successfully generated QR code and link to the 3D model viewer
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 hostedUrl:
- *                   type: string
- *                   description: The hosted URL to the 3D model viewer
- *                 qrCode:
- *                   type: string
- *                   description: The generated QR code data URL
- *       500:
- *         description: Server error or unable to process the request
- */
-app.post('/create-model', authenticateToken, async (req, res) => {
-  const { src, iosSrc, name } = req.body;
+// /**
+//  * @openapi
+//  * /create-model:
+//  *   post:
+//  *     summary: Create a 3D model viewer
+//  *     description: Generate a dynamic HTML template for a 3D model viewer, name it, and generate a QR code pointing to it.
+//  *     tags: [Model Viewer]
+//  *     security:
+//  *       - bearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             required:
+//  *               - src
+//  *               - name
+//  *             properties:
+//  *               src:
+//  *                 type: string
+//  *                 description: The source URL of the 3D model
+//  *               iosSrc:
+//  *                 type: string
+//  *                 description: The source URL for the iOS model (optional)
+//  *               name:
+//  *                 type: string
+//  *                 description: The desired name for the 3D model template
+//  *     responses:
+//  *       200:
+//  *         description: Successfully generated QR code and link to the 3D model viewer
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 hostedUrl:
+//  *                   type: string
+//  *                   description: The hosted URL to the 3D model viewer
+//  *                 qrCode:
+//  *                   type: string
+//  *                   description: The generated QR code data URL
+//  *       500:
+//  *         description: Server error or unable to process the request
+//  */
+// app.post('/create-model', authenticateToken, async (req, res) => {
+//   const { src, iosSrc, name } = req.body;
 
-  try {
-    // Generate unique identifier for the template
-    const templateId = new mongoose.Types.ObjectId();
-    const sanitizedFileName = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${templateId}.html`;
+//   try {
+//     // Generate unique identifier for the template
+//     const templateId = new mongoose.Types.ObjectId();
+//     const sanitizedFileName = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${templateId}.html`;
     
-    // Store or associate this templateId and filename with the authenticated user in the database
-    // This step depends on how you've structured your User model and related data.
+//     // Store or associate this templateId and filename with the authenticated user in the database
+//     // This step depends on how you've structured your User model and related data.
 
-    const html = await ejs.renderFile('views/model-viewer.ejs', { src, iosSrc , modelName: name });
-    const filePath = path.join(__dirname, 'public', sanitizedFileName);
-    fs.writeFileSync(filePath, html);
+//     const html = await ejs.renderFile('views/model-viewer.ejs', { src, iosSrc , modelName: name });
+//     const filePath = path.join(__dirname, 'public', sanitizedFileName);
+//     fs.writeFileSync(filePath, html);
 
-    // Generate the URL that points to the authenticated route for accessing this template
-    const hostedUrl = `${process.env.PRODUCTION_URL || 'http://localhost:3000'}/template/${sanitizedFileName}`;
+//     // Generate the URL that points to the authenticated route for accessing this template
+//     const hostedUrl = `${process.env.PRODUCTION_URL || 'http://localhost:3000'}/template/${sanitizedFileName}`;
 
-    QRCode.toDataURL(hostedUrl, (err, qrCodeUrl) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send('Error generating QR code');
-      }
-      res.json({ hostedUrl, qrCode: qrCodeUrl });
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error processing request');
-  }
-});
+//     QRCode.toDataURL(hostedUrl, (err, qrCodeUrl) => {
+//       if (err) {
+//         console.error(err);
+//         return res.status(500).send('Error generating QR code');
+//       }
+//       res.json({ hostedUrl, qrCode: qrCodeUrl });
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send('Error processing request');
+//   }
+// });
 
 
 /**
@@ -414,9 +415,13 @@ app.get('/template/:filename' , (req, res) => {
 });
 
 
-// app.get('/', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'Index.html'));
-// });
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Index.html'));
+});
+
+app.get('/ARgenerator', (req, res) => {
+    res.sendFile(path.join(__dirname, 'converter.html'));
+});
 
 
 // /**
@@ -535,6 +540,114 @@ app.post('/convert-model', async (req, res) => {
         console.error('Error in conversion:', error);
         res.status(500).send('Error converting file');
     }
+});
+
+
+/**
+ * @openapi
+ * /create-model:
+ *   post:
+ *     summary: Create a 3D model viewer
+ *     description: Generate a dynamic HTML template for a 3D model viewer, convert GLB file to USDZ format, store both GLB and USDZ files, and provide URLs to access them.
+ *     tags: [Model Viewer]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               glbFile:
+ *                 type: string
+ *                 format: binary
+ *                 description: The GLB file to be converted and stored
+ *               name:
+ *                 type: string
+ *                 description: The desired name for the 3D model
+ *     responses:
+ *       200:
+ *         description: Successfully generated QR code and link to the 3D model viewer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 glbUrl:
+ *                   type: string
+ *                   description: The URL to access the stored GLB file
+ *                 usdzUrl:
+ *                   type: string
+ *                   description: The URL to access the stored USDZ file
+ *                 hostedUrl:
+ *                   type: string
+ *                   description: The hosted URL to the 3D model viewer
+ *                 qrCode:
+ *                   type: string
+ *                   description: The generated QR code data URL
+ *       500:
+ *         description: Server error or unable to process the request
+ */
+app.post('/create-model', authenticateToken, upload.single('glbFile'), async (req, res) => {
+  const { name } = req.body;
+
+  try {
+    // Check if a file was uploaded
+    if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+    }
+
+    const glbFileName = req.file.filename;
+    const glbFilePath = req.file.path;
+
+    // Convert GLB to USDZ using the convert3d API
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream(glbFilePath));
+    formData.append('from_format', 'glb');
+    formData.append('to_format', 'usdz');
+
+    const config = {
+      headers: {
+        'Authorization': `Token ${process.env.CONVERT3D}`,
+        ...formData.getHeaders(),
+      },
+    };
+
+    const { data: usdzFile } = await axios.post('https://api.convert3d.org/convert', formData, config);
+
+    // Move the GLB and USDZ files to the public folder
+    const glbPublicPath = `public/uploads/${glbFileName}.glb`;
+    const usdzPublicPath = `public/uploads/${glbFileName}.usdz`;
+    fs.renameSync(glbFilePath, glbPublicPath);
+    fs.writeFileSync(usdzPublicPath, usdzFile);
+
+    // Generate URLs for the GLB and USDZ files
+    const glbUrl = `${process.env.PRODUCTION_URL || 'http://localhost:3000'}/public/uploads/${glbFileName}.glb`;
+    const usdzUrl = `${process.env.PRODUCTION_URL || 'http://localhost:3000'}/public/uploads/${glbFileName}.usdz`;
+
+    // Render the HTML template with the provided data
+    const templateId = new mongoose.Types.ObjectId();
+    const sanitizedFileName = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-${templateId}.html`;
+    const html = await ejs.renderFile('views/model-viewer.ejs', { src: glbUrl, iosSrc: usdzUrl, modelName: name });
+    const filePath = path.join(__dirname, 'public', sanitizedFileName);
+    fs.writeFileSync(filePath, html);
+
+    // Generate the URL that points to the template
+    const hostedUrl = `${process.env.PRODUCTION_URL || 'http://localhost:3000'}/template/${sanitizedFileName}`;
+
+    // Generate QR code for the hosted URL
+    QRCode.toDataURL(hostedUrl, (err, qrCodeUrl) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Error generating QR code');
+      }
+      res.json({ hostedUrl, qrCode: qrCodeUrl });
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error processing request');
+  }
 });
 
 // Start server
