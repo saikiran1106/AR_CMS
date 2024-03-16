@@ -72,6 +72,10 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(cors())
 
+// Middleware for parsing form data
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Swagger definition
 const swaggerOptions = {
   definition: {
@@ -102,7 +106,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
 
 // Serve Swagger
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // EJS View Engine for rendering HTML
 app.set('view engine', 'ejs');
@@ -410,9 +414,9 @@ app.get('/template/:filename' , (req, res) => {
 });
 
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Index.html'));
-});
+// app.get('/', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'Index.html'));
+// });
 
 
 // /**
@@ -464,13 +468,12 @@ res.status(500).json({ message: 'Error recording response' });
 }
 });
 
-
 /**
  * @openapi
  * /convert-model:
  *   post:
  *     summary: Convert a GLB file to USDZ format
- *     description: This endpoint allows for converting 3D model files.
+ *     description: This endpoint allows for converting GLB 3D model files to USDZ format.
  *     tags: [Model Conversion]
  *     requestBody:
  *       required: true
@@ -482,45 +485,57 @@ res.status(500).json({ message: 'Error recording response' });
  *               file:
  *                 type: string
  *                 format: binary
- *               from_format:
- *                 type: string
- *               to_format:
- *                 type: string
  *     responses:
  *       200:
- *         description: Conversion successful, returns USDZ file.
+ *         description: USDZ file generated successfully.
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
  *       400:
  *         description: Error in conversion.
  */
-app.post('/convert-model',  async (req, res) => {
-    // Construct the form data
-    const formData = new FormData();
-    formData.append('file', fs.createReadStream('public/space.glb')); // replace with the actual file path or pass file through request
-    formData.append('from_format', 'glb');
-    formData.append('to_format', 'usdz');
-
-    // Set up the request headers
-    const headers = {
-        ...formData.getHeaders(),
-        "Authorization": `Token ${process.env.CONVERT3D}` // replace with your actual token
-    };
-
-    // Make the API request
+app.post('/convert-model', async (req, res) => {
     try {
+        // Check if a file was uploaded
+        if (!req.files || !req.files.file) {
+            console.log('No file uploaded:', req.files);
+            return res.status(400).send('No file uploaded.');
+        }
+
+        // Retrieve the uploaded GLB file
+        const glbFile = req.files.file;
+
+        // Set up the form data
+        const formData = new FormData();
+        formData.append('file', glbFile.data, {
+            filename: glbFile.name,
+            contentType: glbFile.mimetype
+        });
+        formData.append('from_format', 'glb');
+        formData.append('to_format', 'usdz');
+
+        // Set up the request headers
+        const headers = {
+            ...formData.getHeaders(),
+            "Authorization": `Token ${process.env.CONVERT3D}` // replace with your actual token
+        };
+
+        // Make the API request
         const response = await axios.post('https://api.convert3d.org/convert', formData, { headers });
-        // Handle response here. For example, save the received file or send it back in the response
-        // This is where you'd likely want to handle the response stream and save the file
-        const outputPath = 'path/to/output/damaged-helmet.usdz'; // Set the output path
-        response.data.pipe(fs.createWriteStream(outputPath));
-        res.status(200).send('File converted and saved successfully.');
+
+        // Set the content disposition to attachment to trigger download
+        res.setHeader('Content-Disposition', `attachment; filename="converted_model.usdz"`);
+        // Set the content type to binary
+        res.setHeader('Content-Type', 'application/octet-stream');
+        // Send the USDZ file as the response
+        response.data.pipe(res);
     } catch (error) {
         console.error('Error in conversion:', error);
         res.status(500).send('Error converting file');
     }
 });
-
-
-
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
